@@ -3,126 +3,148 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yekuanyshev/todo/internal/models"
 )
 
 type Task struct {
 	conn    *pgxpool.Pool
+	logger  *slog.Logger
 	builder squirrel.StatementBuilderType
 }
 
-func NewTask(conn *pgxpool.Pool) *Task {
+func NewTask(conn *pgxpool.Pool, logger *slog.Logger) *Task {
 	return &Task{
 		conn:    conn,
+		logger:  logger,
 		builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 	}
 }
 
 func (repo *Task) ListAll(ctx context.Context) (result []models.Task, err error) {
-	query, args, err := repo.builder.
+	query, args := repo.builder.
 		Select("id", "title", "is_done", "created_at").
-		From("task").OrderBy("created_at DESC").ToSql()
+		From("task").OrderBy("created_at DESC").MustSql()
+
+	logger := repo.logger.With(
+		slog.String("func", "ListAll"),
+		slog.String("query", query),
+		slog.Any("args", args),
+	)
+
+	err = pgxscan.Select(ctx, repo.conn, &result, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build query: %w", err)
+		err = fmt.Errorf("failed to run query: %w", err)
+		logger.Error("error", slog.Any("err", err))
+		return
 	}
 
-	rows, err := repo.conn.Query(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to run query: %w", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var task models.Task
-
-		err = rows.Scan(&task.ID, &task.Title, &task.IsDone, &task.CreatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
-		}
-
-		result = append(result, task)
-	}
-
+	logger.Debug("success")
 	return result, nil
 }
 
 func (repo *Task) ByID(ctx context.Context, id int64) (result models.Task, err error) {
-	query, args, err := repo.builder.
+	query, args := repo.builder.
 		Select("id", "title", "is_done", "created_at").
 		From("task").
 		Where(squirrel.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return models.Task{}, fmt.Errorf("failed to build query: %w", err)
-	}
+		Limit(1).
+		MustSql()
 
-	err = repo.conn.QueryRow(ctx, query, args...).Scan(
-		&result.ID,
-		&result.Title,
-		&result.IsDone,
-		&result.CreatedAt,
+	logger := repo.logger.With(
+		slog.String("func", "ByID"),
+		slog.Int64("id", id),
+		slog.String("query", query),
+		slog.Any("args", args),
 	)
+
+	err = pgxscan.Get(ctx, repo.conn, &result, query, args...)
 	if err != nil {
-		return models.Task{}, fmt.Errorf("failed to run query: %w", err)
+		err = fmt.Errorf("failed to run query: %w", err)
+		logger.Error("error", slog.Any("err", err))
+		return
 	}
 
+	logger.Debug("success")
 	return result, nil
 }
 
 func (repo *Task) Create(ctx context.Context, task models.Task) (id int64, err error) {
-	query, args, err := repo.builder.
+	query, args := repo.builder.
 		Insert("task").
 		SetMap(map[string]any{
 			"title": task.Title,
 		}).
 		Suffix("RETURNING id").
-		ToSql()
+		MustSql()
+
+	logger := repo.logger.With(
+		slog.String("func", "Create"),
+		slog.Any("task", task),
+		slog.String("query", query),
+		slog.Any("args", args),
+	)
+
+	err = pgxscan.Get(ctx, repo.conn, &id, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("failed to build query: %w", err)
+		err = fmt.Errorf("failed to run query: %w", err)
+		logger.Error("error", slog.Any("err", err))
+		return
 	}
 
-	err = repo.conn.QueryRow(ctx, query, args...).Scan(&id)
-	if err != nil {
-		return 0, fmt.Errorf("failed to run query: %w", err)
-	}
-
+	logger.Debug("success")
 	return id, nil
 }
 
 func (repo *Task) SetDone(ctx context.Context, id int64, isDone bool) (err error) {
-	query, args, err := repo.builder.
+	query, args := repo.builder.
 		Update("task").
 		Set("is_done", isDone).
 		Where(squirrel.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("failed to build query: %w", err)
-	}
+		MustSql()
+
+	logger := repo.logger.With(
+		slog.String("func", "SetDone"),
+		slog.Int64("id", id),
+		slog.String("query", query),
+		slog.Any("args", args),
+	)
 
 	_, err = repo.conn.Exec(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to exec query: %w", err)
+		err = fmt.Errorf("failed to exec query: %w", err)
+		logger.Error("error", slog.Any("err", err))
+		return
 	}
 
+	logger.Debug("success")
 	return nil
 }
 
 func (repo *Task) Delete(ctx context.Context, id int64) (err error) {
-	query, args, err := repo.builder.
+	query, args := repo.builder.
 		Delete("task").
 		Where(squirrel.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("failed to build query: %w", err)
-	}
+		MustSql()
+
+	logger := repo.logger.With(
+		slog.String("func", "Delete"),
+		slog.Int64("id", id),
+		slog.String("query", query),
+		slog.Any("args", args),
+	)
 
 	_, err = repo.conn.Exec(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to exec query: %w", err)
+		err = fmt.Errorf("failed to exec query: %w", err)
+		logger.Error("error", slog.Any("err", err))
+		return
 	}
 
+	logger.Debug("success")
 	return nil
 }

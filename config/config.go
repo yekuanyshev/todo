@@ -15,6 +15,8 @@ var (
 
 type Config struct {
 	AppName    string `envconfig:"APP_NAME" default:"todo"`
+	LogLevel   string `envconfig:"LOG_LEVEL" default:"INFO"`
+	LogFormat  string `envconfig:"LOG_FORMAT" default:"text"`
 	PgDSN      string `envconfig:"PG_DSN" required:"true"`
 	HTTPListen string `envconfig:"HTTP_LISTEN" required:"true"`
 }

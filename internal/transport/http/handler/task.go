@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"log/slog"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/yekuanyshev/todo/internal/service"
 	"github.com/yekuanyshev/todo/internal/transport/http/handler/form"
@@ -9,11 +11,13 @@ import (
 
 type Task struct {
 	taskService *service.Task
+	logger      *slog.Logger
 }
 
-func NewTask(taskService *service.Task) *Task {
+func NewTask(taskService *service.Task, logger *slog.Logger) *Task {
 	return &Task{
 		taskService: taskService,
+		logger:      logger,
 	}
 }
 

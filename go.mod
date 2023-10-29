@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gofiber/fiber/v2 v2.50.0
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/joho/godotenv v1.5.1
