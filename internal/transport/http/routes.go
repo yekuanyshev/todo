@@ -8,6 +8,10 @@ import (
 func (s *Server) setRoutes(app *fiber.App) {
 	taskHandler := handler.NewTask(s.taskService)
 
+	app.Get("/ping", func(c *fiber.Ctx) error {
+		return c.JSON("pong")
+	})
+
 	taskRouter := app.Group("/task")
 	{
 		taskRouter.Get("", taskHandler.GetAll)
