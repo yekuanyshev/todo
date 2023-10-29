@@ -6,20 +6,6 @@ on:
       - main
 
 jobs:
-  migrate:
-    name: migrate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: install go-migrate
-        run: |
-          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate /usr/bin/migrate
-          which migrate
-      
-      - name: apply migration
-        run: DB_DSN="${{ secrets.DB_DSN }}" make migrate_up
-
   build:
     name: build
     runs-on: ubuntu-latest
@@ -28,7 +14,21 @@ jobs:
      - uses: actions/setup-go@v3
        with:
           go-verion: ">=1.21"
-     - run: go mod download
-     - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
-     - run: docker build -t ghcr.io/yekuanyshev/todo:main .
-     - run: docker push ghcr.io/yekuanyshev/todo:main
+
+     - name: login ghcr.io
+       run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+
+     - name: build image  
+       run: docker build -t ghcr.io/yekuanyshev/todo:main .
+      
+     - name: push image to registry
+       run: docker push ghcr.io/yekuanyshev/todo:main
+
+     - name: install go-migrate
+       run: |
+        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
+        sudo mv migrate /usr/bin/migrate
+        which migrate
+    
+     - name: apply migration
+       run: DB_DSN="${{ secrets.DB_DSN }}" make migrate_up
