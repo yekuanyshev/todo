@@ -6,18 +6,18 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/yekuanyshev/todo/internal/service"
+	"github.com/yekuanyshev/todo/internal/transport/http/handler"
 )
 
 type Server struct {
 	config      Config
-	taskService *service.Task
+	taskHandler *handler.Task
 }
 
-func New(config Config, taskService *service.Task) *Server {
+func New(config Config, taskHandler *handler.Task) *Server {
 	return &Server{
 		config:      config,
-		taskService: taskService,
+		taskHandler: taskHandler,
 	}
 }
 

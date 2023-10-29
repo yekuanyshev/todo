@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/yekuanyshev/todo/internal/models"
 	"github.com/yekuanyshev/todo/internal/repository"
@@ -9,11 +10,13 @@ import (
 
 type Task struct {
 	taskRepository *repository.Task
+	logger         *slog.Logger
 }
 
-func NewTask(taskRepository *repository.Task) *Task {
+func NewTask(taskRepository *repository.Task, logger *slog.Logger) *Task {
 	return &Task{
 		taskRepository: taskRepository,
+		logger:         logger,
 	}
 }
 
