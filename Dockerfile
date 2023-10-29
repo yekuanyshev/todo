@@ -19,7 +19,7 @@ WORKDIR /
 
 COPY --from=build /service /service
 
-EXPOSE 8000
+EXPOSE 8080
 
 USER nonroot:nonroot
 

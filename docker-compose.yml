@@ -6,10 +6,10 @@ services:
       dockerfile: Dockerfile
     container_name: todo
     ports:
-      - 8000:8000
+      - 8080:8080
     environment:
       PG_DSN: postgres://postgres:secret@postgres:5432/postgres
-      HTTP_LISTEN: ":8000"
+      HTTP_LISTEN: ":8080"
     networks:
       - mynetwork
     
