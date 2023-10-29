@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions/setup-go@v3
+       with:
+          go-verion: ">=1.21"
+     - run: go mod download
+     - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+     - run: docker build -t ghcr.io/yekuanyshev/todo:main .
+     - run: docker push ghcr.io/yekuanyshev/todo:main
