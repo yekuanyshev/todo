@@ -32,3 +32,6 @@ jobs:
     
      - name: apply migration
        run: DB_DSN="${{ secrets.DB_DSN }}" make migrate_up
+
+     - name: deploy
+       run: curl -f -k -X POST ${{ vars.PORTAINER_WEBHOOK }}
