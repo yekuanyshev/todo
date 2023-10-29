@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  todo:
+    build:
+      dockerfile: Dockerfile
+    container_name: todo
+    ports:
+      - 8000:8000
+    environment:
+      PG_DSN: postgres://postgres:secret@postgres:5432/postgres
+      HTTP_LISTEN: ":8000"
+    networks:
+      - mynetwork
+    
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: "secret"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
