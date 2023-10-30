@@ -64,5 +64,6 @@ func main() {
 		log.Fatalf("failed to start http server: %v", err)
 	}
 
+	// todo: tests
 	// todo: add graceful shutdown
 }
