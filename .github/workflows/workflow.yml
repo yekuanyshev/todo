@@ -28,18 +28,6 @@ jobs:
      - name: push image to registry
        run: docker push ghcr.io/$OWNER/$IMAGE:$TAG
 
-     - name: install go-migrate
-       run: |
-        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
-        sudo mv migrate /usr/bin/migrate
-        which migrate
-    
-     - name: apply migration
-       run: DB_DSN="${{ secrets.DB_DSN }}" make migrate_up
-
-     - name: deploy
-       run: curl -f -k -X POST ${{ vars.PORTAINER_WEBHOOK }}
-
   golangci:
     name: lint
     runs-on: ubuntu-latest
@@ -49,7 +37,34 @@ jobs:
         with:
           go-version: '1.21'
           cache: false
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
             version: v1.54
+
+  migrate:
+    name: migrate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false
+
+      - name: install gomgirate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/migrate
+          which migrate
+
+      - name: apply migration
+        run: DB_DSN="${{ secrets.DB_DSN }}" make migrate_up
+
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy
+        run: curl -f -k -X POST ${{ vars.PORTAINER_WEBHOOK }}
