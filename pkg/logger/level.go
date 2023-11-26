@@ -14,7 +14,7 @@ const (
 	LevelError Level = "ERROR"
 )
 
-func ParseLevel(level string) (slog.Level, error) {
+func parseLevel(level string) (slog.Level, error) {
 	switch Level(level) {
 	case LevelDebug:
 		return slog.LevelDebug, nil

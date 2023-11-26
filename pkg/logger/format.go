@@ -12,10 +12,10 @@ const (
 	FormatText = "text"
 )
 
-func ParseFormat(format string) (Format, error) {
+func parseFormat(format string) (Format, error) {
 	formats := []string{
-		string(FormatJSON),
-		string(FormatText),
+		FormatJSON,
+		FormatText,
 	}
 
 	if !slices.Contains(formats, format) {

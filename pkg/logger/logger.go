@@ -6,12 +6,12 @@ import (
 )
 
 func New(out io.Writer, level, format string) (*slog.Logger, error) {
-	logLevel, err := ParseLevel(level)
+	logLevel, err := parseLevel(level)
 	if err != nil {
 		return nil, err
 	}
 
-	logFormat, err := ParseFormat(format)
+	logFormat, err := parseFormat(format)
 	if err != nil {
 		return nil, err
 	}
