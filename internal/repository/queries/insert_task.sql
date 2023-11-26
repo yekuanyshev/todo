@@ -1,0 +1,3 @@
+INSERT INTO task (title)
+VALUES ($1)
+RETURNING id;

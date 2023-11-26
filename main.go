@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/yekuanyshev/todo/config"
 	"github.com/yekuanyshev/todo/internal/repository"
@@ -28,7 +29,7 @@ func main() {
 		log.Fatalf("failed to create logger: %v", err)
 	}
 
-	conn, err := postgres.Connect(ctx, conf.PgDSN)
+	conn, err := postgres.ConnectWithRetry(ctx, conf.PgDSN, 3, 3*time.Second)
 	if err != nil {
 		log.Fatalf("failed to connect to postgres: %v", err)
 	}
